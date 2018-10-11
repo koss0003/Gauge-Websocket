@@ -1,0 +1,11 @@
+{
+   "name": "socket-chat-example",
+   "version": "0.0.1",
+   "description": "Testing socket.io to try push data into dashboard from a laptop client to browser dashboard",
+   "dependencies": {
+      "express": "^4.15.2",
+      "ip": "^1.1.5",
+      "path": "^0.12.7",
+      "socket.io": "^2.1.1"
+   }
+}

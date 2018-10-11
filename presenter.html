@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Presenter View</title>
+        <style type="text/css">
+            .gauge {
+                position: relative;
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                transition: background-color 0.3s ease-in-out;
+                margin: 0 auto;
+            }
+            .gauge-mask,
+            .gauge-dial,
+            .gauge-metrics,
+            .segment {
+                position: absolute;
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                font-family: 'KPMG Light', 'DIN Condensed', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .segment,
+            .gauge-needle {
+                opacity: 1;
+            }
+
+            .gauge[class^="status"] > .segment {
+                opacity: 0;
+            }
+
+            /* -- dial for the gauge -- */
+            .gauge-dial {
+                left: 12.5px;
+                top: 12.5px;
+                background-color: white;
+                height: 175px;
+                width: 175px;
+                transition: transform 0.3s ease-in-out;
+                transform: rotate(-90deg)
+            }
+
+            .gauge-needle {
+                position: relative;
+                left: 82.5px;
+                top: -22px;
+                width: 10px;
+                height: 25px;
+                background-color: #3F5263;
+                border-radius: 18px;
+                border: 2px solid white;
+            }
+
+            .gauge-metrics {
+                top: 25%;
+                text-align: center;
+            }
+
+            .gauge-metrics > div:nth-of-type(1) {
+                font-size: 3em;
+            }
+
+            .gauge-metrics > div:nth-of-type(2) {
+                font-size: 1.1em;
+                font-weight: bold;
+            }
+
+            .gauge-metrics > div:nth-of-type(3) {
+                font-size: 1em;
+            }
+            
+            .segment {
+                background: linear-gradient(0deg, transparent 50%, #04CF78 50%);                
+            }
+        </style>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="utils.js"></script>
+        <script>
+            $(function() {
+                var socket = io();
+                socket.on('gauge datapush', function(newValue) {
+                    fnSetGauge(newValue);
+                });
+                 
+            });
+            function fnSetGauge(gaugeValue) {
+                var gaugeValue = parseInt(gaugeValue || 0);
+                var dialNumber = parseInt($('#dial-number').text() || 0);
+                var diff = Math.abs(gaugeValue - dialNumber);
+                var rotate = -90 + (gaugeValue * 180 / 100);
+                var delay = (diff / 100) + 0.1;
+
+                if (typeof(gaugeValue) != 'undefined' && gaugeValue < 101 && gaugeValue > -1) {
+                    setTimeout(function() {
+                        $('.gauge-dial').css('transition', 'transform ' + delay + 's ease-in-out').css('transform', 'rotate(' + rotate + 'deg)');
+                    }, delay * 2);
+        
+                    var options = {
+                        from: dialNumber,
+                        to: gaugeValue,
+                        speed: 800,
+                        refreshInterval: 10
+                    }
+                    $('#dial-number').countTo(options);
+                };
+                return false;
+            }   
+            function fnAdjustGauge() {
+                var gaugeValue = parseInt($('#gauge-value').val() || 0);
+                var dialNumber = parseInt($('#dial-number').text() || 0);
+                var diff = Math.abs(gaugeValue - dialNumber);
+                var rotate = -90 + (gaugeValue * 180 / 100);
+                var delay = (diff / 100) + 0.1;
+
+                setTimeout(function() {
+                    $('.gauge-dial').css('transition', 'transform ' + delay + 's ease-in-out').css('transform', 'rotate(' + rotate + 'deg)');
+                }, delay * 2);
+                if (gaugeValue && gaugeValue < 101 && gaugeValue > -1) {
+                    var options = {
+                        from: dialNumber,
+                        to: gaugeValue,
+                        speed: 800,
+                        refreshInterval: 10
+                    }
+                    $('#dial-number').countTo(options);
+                };
+                return false;
+            }        
+        </script>        
+    </head>
+    <body>
+            <div class="container" style="width: 500px; align-content: center; align-items: center; text-align: center; padding: 20px 20px 0 20px">
+                <div class="gauge">
+                    <div class="segment"></div>
+                    <div class="gauge-mask"></div>
+                    <div class="gauge-dial">
+                        <div class='gauge-needle'></div>
+                    </div>
+                    <div class="gauge-metrics">
+                        <div id="dial-number">0</div>
+                    </div>
+                </div>
+            
+            </div>
+
+            <input type="text" id="gauge-value" name="gauge-value"/><br/>
+            <button onclick="fnAdjustGauge();return false" id="gauge-update">Hrmm</button><br/><br/>
+            <button id="send">Send!</button>
+ 
+    </body>
+</html> 
